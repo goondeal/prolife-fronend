@@ -9,10 +9,15 @@ import router from './router'
 // Tailwindcss
 import './assets/input.css'
 
+// axios
+import axios from 'axios'
+
+
+axios.defaults.baseURL = 'http://127.0.0.1:8000/api/v1'
 
 const app = createApp(App)
 
 app.use(createPinia())
-app.use(router)
+app.use(router, axios)
 
 app.mount('#app')
