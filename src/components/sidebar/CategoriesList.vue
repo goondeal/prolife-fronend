@@ -29,7 +29,7 @@
             <div v-if="modalIsOpen">
                 <div @click="toggleNewCategoryModal" class="absolute bg-black opacity-70 inset-0 z-0"></div>
                 <div class="w-full max-w-lg p-3 relative mx-auto my-auto rounded-xl shadow-lg bg-white">
-                    <form method="post" @submit="onSubmit">
+                    <form method="post" @submit.prevent="onSubmit">
                         <div class="p-3 flex-auto text-center justify-center items-center leading-6">
                             <h2 class="text-2xl font-bold py-4">New Category</h2>
                             <div class="w-fit mx-auto text-start">
@@ -58,10 +58,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useUserStore } from '../../stores/user';
+// import axios from 'axios'
+import useAuthRequest from '../../composables/useAuthRequest';
+// import { useUserStore } from '../../stores/user';
 
-const userStore = useUserStore()
+// const userStore = useUserStore()
+
+const { sendAuthRequest } = useAuthRequest()
 const categories = ref([])
 
 const modalIsOpen = ref(false)
@@ -72,32 +75,48 @@ const color = ref('#EEEEEE')
 const isLoading = ref(false)
 
 const getCategories = () => {
-    axios
-        .get('/categories', {
-            headers: {
-                'Authorization': `Token ${userStore.accessToken}`
-            }
-        })
+    sendAuthRequest({ url: '/categories', method: 'get' })
         .then((response) => {
             console.log('response.data =', response.data)
-            categories.value = response.data.results
-        })
+            if (response.status === 200) {
+                categories.value = response.data.results
+            }
+        }).catch((err) => console.log('getCategories error =', err))
+    // axios
+    //     .get('/categories', {
+    //         headers: {
+    //             'Authorization': `Token ${userStore.accessToken}`
+    //         }
+    //     })
+    //     .then((response) => {
+    //         console.log('response.data =', response.data)
+    //         categories.value = response.data.results
+    //     })
 }
 
 onMounted(() => getCategories())
 
 
-
-
-const onSubmit = (e) => {
-    e.preventDefault()
+const onSubmit = () => {
 
     if (name.value && color.value) {
         isLoading.value = true
-        axios.post(
-            '/categories',
-            { name: name.value, color: color.value }
-        ).then((response) => console.log('response.data =', response.data))
+        // axios.post(
+        //     '/categories/',
+        //     { name: name.value, color: color.value },
+        //     {
+        //         headers: {
+        //             'Authorization': `Token ${userStore.accessToken}`
+        //         }
+        //     }
+        // )
+        sendAuthRequest({ url: '/categories/', method: 'post', data: { name: name.value, color: color.value } })
+            .then((response) => {
+                console.log('response.data =', response.data)
+                if (response.status === 201) {
+                    categories.value.append(response.data)
+                }
+            }).catch((err) => console.log('addCategory error =', err))
             .finally(
                 () => {
                     isLoading.value = false
@@ -106,6 +125,5 @@ const onSubmit = (e) => {
             )
     }
 }
-
 
 </script>

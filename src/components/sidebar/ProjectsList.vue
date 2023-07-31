@@ -13,24 +13,17 @@
     </div>
 </template>
 
+
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useUserStore } from '../../stores/user';
+import useAuthRequest from '../../composables/useAuthRequest'
 
 
-const userStore = useUserStore()
-
+const { sendAuthRequest } = useAuthRequest()
 const projects = ref([])
 
-
 const getProjects = () => {
-    axios
-        .get('/latest-projects', {
-            headers: {
-                'Authorization': `Token ${userStore.accessToken}`
-            }
-        })
+    sendAuthRequest({ url: '/latest-projects', method: 'get' })
         .then((response) => {
             console.log('response.data =', response.data)
             projects.value = response.data.results
@@ -38,6 +31,5 @@ const getProjects = () => {
 }
 
 onMounted(() => getProjects())
-
 
 </script>

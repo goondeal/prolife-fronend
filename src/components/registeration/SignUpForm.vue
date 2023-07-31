@@ -84,11 +84,12 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import axios from 'axios'
 import { useRouter } from 'vue-router';
+import useAuthRequest from '../../composables/useAuthRequest';
 
 
 const router = useRouter()
+const {sendAuthRequest} = useAuthRequest()
 
 const email = ref('')
 const password = ref('')
@@ -127,8 +128,7 @@ const signup = () => {
         }
         console.log('signup data = ', formData)
 
-        axios
-        .post('/auth/users/', formData)
+        sendAuthRequest({url: '/auth/users/', method: 'post', data: formData})
         .then((response) => {
             console.log('signup response =', response)
             if (response.staus === 200) {
