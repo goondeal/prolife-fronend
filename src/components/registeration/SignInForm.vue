@@ -66,11 +66,12 @@
 import { ref, computed } from 'vue'
 import { useUserStore } from '../../stores/user'
 import { useRouter } from 'vue-router'
-import useAuthRequest from '../../composables/useAuthRequest'
+import axios from 'axios'
+import useAuthRequest from '../../composables/useAuthRequest';
 
 
 const router = useRouter()
-const {sendAuthRequest} = useAuthRequest()
+const { sendAuthRequest } = useAuthRequest()
 
 const email = ref('')
 const password = ref('')
@@ -93,7 +94,7 @@ const signin = () => {
         }
         console.log('login data = ', formData)
 
-            sendAuthRequest({url: '/auth/token/login/', method: 'post', data: formData})
+        axios.post('/auth/token/login/', formData)
             .then((response) => {
                 console.log('login response =', response)
                 if (response.status === 200) {
@@ -103,7 +104,7 @@ const signin = () => {
                     const userStore = useUserStore()
                     userStore.setAccessToken(data.auth_token)
 
-                    sendAuthRequest({url: '/auth/users/me', method: 'get'})
+                    sendAuthRequest({ url: '/auth/users/me', method: 'get' })
                         .then((response) => {
                             console.log('user response = ', response)
                             if (response.status === 200) {
