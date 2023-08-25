@@ -35,16 +35,31 @@
                 </div>
 
                 <form method="post" @submit.prevent="signup">
-                    <input type="email" id="email" v-model="email"
-                        class="my-3 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                    <input class="hidden" type="file" accept="image/*" ref="file" @change="readFile($event)" />
+                    <div class="flex">
+                        <div class="relative inline-block mx-auto my-4">
+                            <img class="w-24 h-24 rounded-full object-cover" :src="profilePicSrc" alt="profile picture">
+                            <div
+                                class="absolute top-0 h-full w-full rounded-full bg-black opacity-20 flex items-center justify-center">
+                                <camera-icon class="h-8 w-8 p-2 color-white rounded-full text-white hover:bg-gray-200 hover:text-black"
+                                    @click="browse()"></camera-icon>
+                                <trash-icon class="h-8 w-8 p-2 color-white rounded-full text-white hover:bg-gray-200 hover:text-black"
+                                @click="removePic()"></trash-icon>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="block" for="email">Email Address</label>
+                    <input type="email" name="email" id="email" v-model="email"
+                        class="mb-4 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="example@gmail.com" required>
 
-                    <select name="gender" v-model="gender"
-                        class="mb-2 bg-white text-gray-700 w-full border-gray-300 border rounded-sm px-4 block appearance-none focus:outline-none py-2 leading-normal"
-                        required>
-                        <option value="none" selected>Gender</option>
 
-                        <option value="M">Male</option>
+                    <label for="gender">Gender</label>
+                    <select name="gender" v-model="gender"
+                        class="mb-4 bg-white text-gray-700 w-full border-gray-300 border rounded-sm px-4 block appearance-none focus:outline-none py-2 leading-normal"
+                        required>
+                        <option value="M" selected>Male</option>
 
                         <option value="F">Female</option>
 
@@ -52,17 +67,19 @@
 
                     </select>
 
-                    <label for="birthday">Birthday</label>
+                    <label class="mt-4" for="birthday">Birthday</label>
                     <input type="date" name="birthday" v-model="birthday"
-                        class="mb-5 bg-white text-gray-700 w-full border-gray-300 border rounded-sm px-4 block appearance-none focus:outline-none py-2 leading-normal"
+                        class="mb-4 bg-white text-gray-700 w-full border-gray-300 border rounded-sm px-4 block appearance-none focus:outline-none py-2 leading-normal"
                         required>
 
-                    <input type="password" id="password" v-model="password"
-                        class="my-3 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                    <label class="mt-4" for="password">Password</label>
+                    <input type="password" name="password" id="password" v-model="password"
+                        class="mb-4 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="********" required>
 
-                    <input type="password" id="repeat-password" v-model="repeatPassword"
-                        class="my-3 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                    <label class="mt-4" for="repeat-password">Repeat Password</label>
+                    <input type="password" name="repeat-password" id="repeat-password" v-model="repeatPassword"
+                        class="mb-4 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="********" required>
 
                     <!-- Submit button -->
@@ -85,11 +102,11 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router';
-import useAuthRequest from '../../composables/useAuthRequest';
+import axios from 'axios'
+import { CameraIcon, TrashIcon } from '@heroicons/vue/24/outline'
 
 
 const router = useRouter()
-const {sendAuthRequest} = useAuthRequest()
 
 const email = ref('')
 const password = ref('')
@@ -99,6 +116,11 @@ const genders = ['M', 'F', 'O']
 const gender = ref('none')
 
 const birthday = ref()
+
+const profilePic = ref()
+const file = ref()
+const defaultSrc = 'http://localhost:8000/media/users/default.jpeg'
+const profilePicSrc = ref(defaultSrc)
 
 watch(birthday, (newBirthday) => {
     console.log(`birthday is ${newBirthday}`)
@@ -116,27 +138,66 @@ const isValidForm = computed(() => {
         && birthday.value
 })
 
+const browse = () => {
+    file.value.click()
+}
+
+const removePic = () => {
+    profilePic.value = null
+    profilePicSrc.value = defaultSrc
+}
+
+const readFile = ($event) => {
+    const target = $event.target
+    if (target && target.files) {
+        profilePic.value = target.files[0]
+        const reader = new FileReader()
+        reader.readAsDataURL(profilePic.value)
+        reader.onload = (res) => {
+            profilePicSrc.value = res.target.result
+        }
+        reader.onerror = (err) => console.log('reader error =', err)
+
+    }
+
+}
+
 const signup = () => {
 
     if (isValidForm.value) {
-        const formData = {
-            email: email.value,
-            gender: gender.value,
-            birthday: birthday.value,
-            password: password.value,
-            re_password: repeatPassword.value,
+        let formData = new FormData()
+        formData.append('email', email.value)
+        formData.append('gender', gender.value)
+        formData.append('birthday', birthday.value)
+        if (profilePic.value) {
+            formData.append('profile_pic', profilePic.value)
         }
+        formData.append('password', password.value)
+        formData.append('re_password', repeatPassword.value)
+        // const formData = {
+        //     email: email.value,
+        //     gender: gender.value,
+        //     birthday: birthday.value,
+        //     profile_pic: profilePic.value,
+        //     password: password.value,
+        //     re_password: repeatPassword.value,
+        // }
         console.log('signup data = ', formData)
 
-        sendAuthRequest({url: '/auth/users/', method: 'post', data: formData})
-        .then((response) => {
-            console.log('signup response =', response)
-            if (response.staus === 200) {
-                // Navigate to login page
-                router.push({name: 'login'})
+        // axios.post({ url: '/auth/users/', method: 'post', data: formData })
+        axios.post('/auth/users/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
             }
         })
-        .catch((err) => console.log('signup error =', err))
+            .then((response) => {
+                console.log('signup response =', response)
+                if (response.status === 201) {
+                    // Navigate to login page
+                    router.push({ name: 'login' })
+                }
+            })
+            .catch((err) => console.log('signup error =', err))
 
     }
 }
