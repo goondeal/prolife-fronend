@@ -1,10 +1,8 @@
 <template>
     <div class="max-w-64 min-w-fit h-full bg-gray-50 dark:bg-dark-secondary">
         <div class="p-[8px]">
-            <div v-if="userStore.getUser" class="flex items-center w-100 my-8 dark:hover:bg-dark-hover hover:cursor-pointer">
-                <div class="w-10 h-10 rounded-full bg-red-200">
-                </div>
-                <div class="w-[8px]"></div>
+            <div v-if="userStore.getUser" class="flex flex-col items-center w-100 my-8 dark:hover:bg-dark-hover hover:cursor-pointer">
+                <img class="w-16 h-16 rounded-full" :src="userStore.getUser.profile_pic || defaultSrc" alt="profile picture"/>
                 <h2 class="dark:text-white font-light text-base text-ellipsis ">
                     {{ userStore.getUser.email }}
                 </h2>
@@ -35,6 +33,7 @@ import useAuthRequest from '../../composables/useAuthRequest'
 const router = useRouter()
 const userStore = useUserStore()
 const {sendAuthRequest} = useAuthRequest()
+const defaultSrc = 'http://localhost:8000/media/users/default.jpeg'
 
 const getUser = () => {
     const user = userStore.getUser.value
@@ -54,15 +53,6 @@ const getUser = () => {
 onMounted(() => getUser())
 
 const logout = () => {
-    // axios
-    // .post(
-    //     '/auth/token/logout/',
-    //     {
-    //         headers: {
-    //             'Authorization': `Token ${userStore.accessToken}`
-    //         }
-    //     }
-    // )
     sendAuthRequest({url: '/auth/token/logout/', method: 'post'})
     .then((response) => console.log('logout response =', response))
     .catch((err) => console.log('logout err =', err))

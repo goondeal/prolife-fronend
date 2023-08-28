@@ -101,7 +101,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { CameraIcon, TrashIcon } from '@heroicons/vue/24/outline'
 
