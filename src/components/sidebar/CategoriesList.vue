@@ -114,7 +114,7 @@ const onSubmit = () => {
             .then((response) => {
                 console.log('response.data =', response.data)
                 if (response.status === 201) {
-                    categories.value.append(response.data)
+                    categories.value.push(response.data)
                 }
             }).catch((err) => console.log('addCategory error =', err))
             .finally(
@@ -125,5 +125,4 @@ const onSubmit = () => {
             )
     }
 }
-
 </script>
