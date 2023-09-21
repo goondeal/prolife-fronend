@@ -1,10 +1,10 @@
 <template>
-    <div class="bg-white border rounded m-auto my-4" style="width: 26rem;">
+    <div class="dark:bg-dark-bg-secondary border border-light-text-muted rounded m-auto my-4" style="width: 26rem;">
         <section class="w-100 px-4 py-3">
             <h2 class="mb-4 font-medium text-2xl">Sign up</h2>
             <div class="flex flex-col">
                 <div class="text-center">
-                    <button class="bg-white border rounded p-2 m-2" type="button">
+                    <button class="border rounded p-2 m-2" type="button">
                         <span class="text-sm">
                             <i class="inline p-2" role="img" aria-label="google" aria-hidden="false">
                                 <svg class="inline" width="20" height="20" viewBox="0 0 24 24">
@@ -30,8 +30,8 @@
                 </div>
 
                 <div class="w-100 text-center my-8 flex items-center relative">
-                    <hr class="m-0 w-full text-gray-500" />
-                    <p class="bg-white p-2 rounded m-auto absolute" style="left: 45%;">or</p>
+                    <hr class="m-0 w-full border-light-text-muted" />
+                    <p class="bg-light-bg-primary dark:bg-dark-bg-secondary p-2 rounded m-auto absolute" style="left: 45%;">or</p>
                 </div>
 
                 <form method="post" @submit.prevent="signup">
@@ -51,15 +51,15 @@
 
                     <label class="block" for="email">Email Address</label>
                     <input type="email" name="email" id="email" v-model="email"
-                        class="mb-4 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                        class="mb-4 border border-light-text-muted text-sm rounded-sm block w-full p-2.5 dark:bg-dark-bg-secondary dark:placeholder-gray-400 dark:text-dark-text-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="example@gmail.com" required>
 
 
                     <label for="gender">Gender</label>
                     <select name="gender" v-model="gender"
-                        class="mb-4 bg-white text-gray-700 w-full border-gray-300 border rounded-sm px-4 block appearance-none focus:outline-none py-2 leading-normal"
+                        class="mb-4 border border-light-text-muted text-sm rounded-sm block w-full p-2.5 bg-light-bg-primary dark:bg-dark-bg-secondary dark:placeholder-gray-400 dark:text-dark-text-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light appearance-none focus:outline-none py-2 leading-normal"
                         required>
-                        <option value="M" selected>Male</option>
+                        <option value="M">Male</option>
 
                         <option value="F">Female</option>
 
@@ -69,17 +69,17 @@
 
                     <label class="mt-4" for="birthday">Birthday</label>
                     <input type="date" name="birthday" v-model="birthday"
-                        class="mb-4 bg-white text-gray-700 w-full border-gray-300 border rounded-sm px-4 block appearance-none focus:outline-none py-2 leading-normal"
+                        class="mb-4 border border-light-text-muted text-sm rounded-sm block w-full p-2.5 dark:bg-dark-bg-secondary dark:placeholder-gray-400 dark:text-dark-text-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light appearance-none focus:outline-none py-2 leading-normal dark:[color-scheme:dark]"
                         required>
 
                     <label class="mt-4" for="password">Password</label>
                     <input type="password" name="password" id="password" v-model="password"
-                        class="mb-4 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                        class="mb-4 border border-light-text-muted text-sm rounded-sm block w-full p-2.5 dark:bg-dark-bg-secondary dark:placeholder-gray-400 dark:text-dark-text-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="********" required>
 
                     <label class="mt-4" for="repeat-password">Repeat Password</label>
                     <input type="password" name="repeat-password" id="repeat-password" v-model="repeatPassword"
-                        class="mb-4 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                        class="mb-4 border border-light-text-muted text-sm rounded-sm block w-full p-2.5 dark:bg-dark-bg-secondary dark:placeholder-gray-400 dark:text-dark-text-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="********" required>
 
                     <!-- Submit button -->
@@ -90,8 +90,8 @@
                 </form>
 
                 <!-- Register buttons -->
-                <p class="text-xs text-center mt-5">
-                    Already signed up? <router-link :to="{ name: 'login' }" class="underline"> Login </router-link>
+                <p class="text-sm text-center mt-5 text-light-text-muted">
+                    Already signed up? <router-link :to="{ name: 'login' }" class="underline text-light-text-primary dark:text-dark-text-primary"> Login </router-link>
                 </p>
             </div>
         </section>
@@ -113,7 +113,7 @@ const password = ref('')
 const repeatPassword = ref('')
 
 const genders = ['M', 'F', 'O']
-const gender = ref('none')
+const gender = ref('M')
 
 const birthday = ref()
 
