@@ -42,7 +42,12 @@ const routes = [
     component: () => import('../views/TaskView.vue'),
     meta: { layout: DefaultLayout },
   },
-
+  {
+    path: '/app/calendar',
+    name: 'calendar',
+    component: () => import('../views/CalendarView.vue'),
+    meta: { layout: DefaultLayout },
+  },
   // Not Found Page
   {
     path: '/:pathMatch(.*)*',
