@@ -1,25 +1,50 @@
 <template>
-    <Vue3EasyDataTable header-class-name="customize-header" :headers="headers" :items="items" alternating border-cell
-        hide-footer>
-        <template #header="header">
-            <div class="text-sm font-medium">
-                {{ header.text.charAt(0).toUpperCase() + header.text.slice(1) }}
-            </div>
-        </template>
-        <template #item-name="{ name, _href }">
-            <RouterLink class="text-blue-700 hover:underline" :to="_href">{{ name
-            }}</RouterLink>
-        </template>
-    </Vue3EasyDataTable>
+    <div>
+        <Vue3EasyDataTable header-class-name="customize-header" :headers="headers" :items="items" alternating border-cell
+            hide-footer>
+            <template #header="header">
+                <div class="text-sm font-medium">
+                    {{ header.text.charAt(0).toUpperCase() + header.text.slice(1) }}
+                </div>
+            </template>
+            <template #item-name="{ id, name, _href, is_leaf }">
+                <div class="flex justify-between items-center min-w-[100px] w-fit">
+                    <RouterLink class="text-blue-700 hover:underline" :to="_href">{{ name
+                    }}</RouterLink>
+
+                    <ellipsis-vertical-icon v-if="is_leaf" @click="showExportTaskModal(id)"
+                        class="w-6 h-6 p-1 text-gray-900 rounded-full hover:bg-gray-300">
+
+                    </ellipsis-vertical-icon>
+                </div>
+            </template>
+        </Vue3EasyDataTable>
+        <Teleport to="#app">
+            <ModalWrapper v-if="openModal" @closeModal="openModal = false">
+                <ExportTaskForm :taskID="selectedTaskID"></ExportTaskForm>
+            </ModalWrapper>
+        </Teleport>
+    </div>
 </template>
 
+
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, provide } from 'vue'
 import Vue3EasyDataTable from 'vue3-easy-data-table'
+import { EllipsisVerticalIcon } from '@heroicons/vue/24/outline'
+import ModalWrapper from './modals/ModalWrapper.vue'
+import ExportTaskForm from './modals/forms/ExportTaskForm.vue'
+
 
 const props = defineProps({
     data: { type: Object, required: true },
 })
+
+const openModal = ref(false)
+const closeModal = () => openModal.value = false
+provide('closeModal', closeModal)
+
+const selectedTaskID = ref()
 
 const headers = computed(() => {
     const attrs = new Set()
@@ -47,7 +72,11 @@ const items = computed(() => {
     return props.data || []
 })
 
-
+const showExportTaskModal = (id) => {
+    console.log('clicked item = ', id)
+    selectedTaskID.value = id
+    openModal.value = true
+}
 
 // const headers = ref([
 // { text: "PLAYER", value: "player" },
