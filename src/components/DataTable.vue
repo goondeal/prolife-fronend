@@ -29,7 +29,7 @@
 
 
 <script setup>
-import { computed, ref, provide } from 'vue'
+import { computed, ref } from 'vue'
 import Vue3EasyDataTable from 'vue3-easy-data-table'
 import { EllipsisVerticalIcon } from '@heroicons/vue/24/outline'
 import ModalWrapper from './modals/ModalWrapper.vue'
@@ -41,9 +41,6 @@ const props = defineProps({
 })
 
 const openModal = ref(false)
-const closeModal = () => openModal.value = false
-provide('closeModal', closeModal)
-
 const selectedTaskID = ref()
 
 const headers = computed(() => {
