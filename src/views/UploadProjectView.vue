@@ -30,9 +30,10 @@
 import { ref } from 'vue'
 import JsonEditorVue from 'json-editor-vue'
 import useAuthRequest from '../composables/useAuthRequest'
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const { sendAuthRequest } = useAuthRequest()
 
 
@@ -80,6 +81,10 @@ const saveProject = () => {
         .then((res) => {
             console.log('SUCCESS!!')
             console.log(res)
+            if (res.status === 201) {
+                editor.value.value = {}
+                router.replace({name: 'category-detail', params: {id: route.params.id}})
+            }
         })
         .catch((err) => {
             console.log(err)
