@@ -39,8 +39,9 @@
                     </button>
                 </div>
             </div>
-            <VueTree v-else class="flex-grow" :dataset="getTreeData" :config="editor.treeConfig">
-                <template #node="{ node, collapsed }">
+            <TreeView v-else class="flex-grow">
+                <!-- :dataset="getTreeData" :config="editor.treeConfig"> -->
+                <!-- <template #node="{ node, collapsed }">
                     <div class="p-2 flex items-center justify-start border border-blue-600"
                         :style="{ border: collapsed ? '2px solid grey' : '' }">
                         <span class="flex-grow bg-white text-ellipsis">{{ node.name }}</span>
@@ -78,8 +79,8 @@
                                 </ul>
                             </div>
                         </div>
-                </template>
-            </VueTree>
+                </template> -->
+            </TreeView>
         </div>
     </div>
 </template>
@@ -91,7 +92,8 @@ import JsonEditorVue from 'json-editor-vue'
 import useAuthRequest from '../composables/useAuthRequest'
 import { useRoute, useRouter } from 'vue-router'
 // import VueTree from "@ssthouse/vue3-tree-chart"
-import VueTree from "@ssthouse/vue3-tree-chart/src/vue-tree/index"
+// import VueTree from "@ssthouse/vue3-tree-chart/src/vue-tree/index"
+import TreeView from '../components/TreeView.vue'
 import { EllipsisVerticalIcon } from '@heroicons/vue/24/outline'
 
 const route = useRoute()

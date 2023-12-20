@@ -13,7 +13,7 @@ import './assets/input.css'
 import 'vue3-easy-data-table/dist/style.css';
 
 // vue3-tree-chart
-import "@ssthouse/vue3-tree-chart/dist/vue3-tree-chart.css"
+// import "@ssthouse/vue3-tree-chart/dist/vue3-tree-chart.css"
 
 // axios
 import axios from 'axios'
