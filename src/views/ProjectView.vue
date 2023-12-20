@@ -41,6 +41,7 @@ const getProjectData = () => {
                 if (project.value._tasks) {
                     // set project_href attribute
                     project.value._tasks.forEach((task) => {
+                        task.id = task.id - project.value.id
                         task._href = `${route.params.projectID}/tasks/${task.id}`
                     })
                 }

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.0.18",
+    "@ssthouse/vue3-tree-chart": "^0.2.6",
     "axios": "^1.4.0",
     "json-editor-vue": "^0.10.6",
     "pinia": "^2.1.3",

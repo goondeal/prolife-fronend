@@ -12,6 +12,9 @@ import './assets/input.css'
 // easy-data-table
 import 'vue3-easy-data-table/dist/style.css';
 
+// vue3-tree-chart
+import "@ssthouse/vue3-tree-chart/dist/vue3-tree-chart.css"
+
 // axios
 import axios from 'axios'
 import { useUserStore } from './stores/user'

@@ -33,10 +33,9 @@
 
         <Teleport to="body">
             <ModalWrapper v-if="openModal" @closeModal="openModal = false">
-                <NewCategoryForm />
+                <CreateEditCategoryForm :action="createNewCategory"/>
             </ModalWrapper>
         </Teleport>
-
     </div>
 </template>
 
@@ -45,7 +44,7 @@
 import { ref, onMounted, provide } from 'vue'
 import useAuthRequest from '../../composables/useAuthRequest'
 import ModalWrapper from '../modals/ModalWrapper.vue'
-import NewCategoryForm from '../modals/forms/NewCategoryForm.vue'
+import CreateEditCategoryForm from '../modals/forms/CreateEditCategoryForm.vue'
 
 
 const { sendAuthRequest } = useAuthRequest()
@@ -64,6 +63,27 @@ const getCategories = () => {
                 categories.value = response.data.results
             }
         }).catch((err) => console.log('getCategories error =', err))
+}
+
+const createNewCategory = (data, isLoading) => {
+        isLoading.value = true
+
+        sendAuthRequest({ url: '/categories/', method: 'post', data: data, config: {
+            headers: {'Content-Type': 'multipart/form-data'}
+        }})
+            .then((response) => {
+                console.log('response.data =', response.data)
+                if (response.status === 201) {
+                    addCategoryToList(response.data)
+                }
+            }).catch((err) => console.log('addCategory error =', err))
+            .finally(
+                () => {
+                    isLoading.value = false
+                    openModal.value = false
+
+                }
+            )
 }
 
 onMounted(() => getCategories())

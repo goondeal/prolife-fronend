@@ -18,6 +18,12 @@ const routes = [
     meta: { layout: DefaultLayout },
   },
   {
+    path: '/app/categories',
+    name: 'category-list',
+    component: () => import('../views/CategoriesView.vue'),
+    meta: { layout: DefaultLayout },
+  },
+  {
     path: '/app/categories/:id',
     name: 'category-detail',
     component: () => import('../views/CategoryView.vue'),

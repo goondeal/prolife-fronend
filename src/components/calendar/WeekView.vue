@@ -16,22 +16,22 @@
                 </tr>
             </thead>
             <tbody>
-                <tr class="h-[4rem]" :class="i - 1 == today.getHours() ? 'relative' : ''" v-for="i in 24" :key="i">
+                <tr v-for="i in 24" :key="i" class="h-[4rem]" :class="i - 1 == today.getHours() ? 'relative' : ''">
                     <td class="text-center border-collapse border border-gray-300"
                         :class="i - 1 == today.getHours() ? 'bg-green-600 text-white' : ''">{{ i - 1 }}</td>
 
-                    <td class="relative border-collapse border border-gray-300 hover:cursor-pointer hover:bg-light-bg-highlight dark:hover:bg-dark-bg-highlight" v-for="date in weekDates" :key="date">
-                        <div v-if="tasks[getDateDateString(date)] && tasks[getDateDateString(date)][`${i-1}`]">
-                        
-                        <div v-for="task in tasks[getDateDateString(date)][`${i-1}`]" :key="task.task.id"
-                            class="absolute z-10 bg-blue-500 p-1 w-11/12 left-0"
-                            :style="task['style'] || {}">
-                            <h4>
-                                {{ task.task.name }}
-                            </h4>
-                            <span><small>{{ task.timeSpan }}</small></span>
+                    <td v-for="date in weekDates" :key="date" @click="openNewTaskModal(date, i)"
+                        class="relative border-collapse border border-gray-300 hover:cursor-pointer hover:bg-light-bg-highlight dark:hover:bg-dark-bg-highlight">
+                        <div v-if="tasks[getDateDateString(date)] && tasks[getDateDateString(date)][`${i - 1}`]">
+
+                            <div v-for="task in tasks[getDateDateString(date)][`${i - 1}`]" :key="task.task.id"
+                                class="absolute z-10 bg-blue-500 p-1 w-11/12 left-0" :style="task['style'] || {}">
+                                <h4>
+                                    {{ task.task.name }}
+                                </h4>
+                                <span><small>{{ task.timeSpan }}</small></span>
+                            </div>
                         </div>
-                    </div>
                     </td>
 
                     <div v-if="i - 1 == today.getHours()" class="h-[1px] bg-green-600 w-full absolute left-0"
@@ -39,17 +39,32 @@
                 </tr>
             </tbody>
         </table>
+
+        <Teleport to="#app">
+            <ModalWrapper v-if="openModal" @closeModal="openModal = false">
+                <SearchTasks></SearchTasks>
+            </ModalWrapper>
+        </Teleport>
+
     </div>
 </template>
 
 
 <script setup>
-import { computed, defineProps, ref, onBeforeMount } from 'vue'
+import { computed, defineProps, ref, onBeforeMount, onMounted, watch } from 'vue'
+import useAuthRequest from '../../composables/useAuthRequest'
+import ModalWrapper from '../modals/ModalWrapper.vue'
+import SearchTasks from '../modals/forms/SearchTasks.vue'
 
+
+const { sendAuthRequest } = useAuthRequest()
+const tasks = ref({})
+const isLoading = ref(false)
+const openModal = ref(false)
 
 const props = defineProps({
     day: { type: Date, required: true },
-    tasks: { type: Object, required: true },
+    // tasks: { type: Object, required: true },
 })
 
 const getNowIndicatorTop = () => {
@@ -83,11 +98,11 @@ const datesAreEqual = (d1, d2) => {
     return getDateDateString(d1) == getDateDateString(d2)
 }
 
-// const getLocale = () => {
-//     return navigator.languages && navigator.languages.length
-//     ? navigator.languages[0]
-//     : navigator.language
-// }
+const getLocale = () => {
+    return navigator.languages && navigator.languages.length
+        ? navigator.languages[0]
+        : navigator.language
+}
 
 
 // const tasks = computed(() => {
@@ -168,9 +183,74 @@ const datesAreEqual = (d1, d2) => {
 // }
 
 
+const getTasks = () => {
+    isLoading.value = true
+    // const formData = {
+    //     from: weekDates.value[0],
+    //     to: weekDates.value[6],
+    // }
+
+    sendAuthRequest({ url: `/calendar/?from=${weekDates.value[0].toJSON()}&to=${weekDates.value[6].toJSON()}`, method: 'get' })
+        .then((response) => {
+            console.log('week tasks response = ', response)
+            if (response.status === 200) {
+                const data = response.data.results
+                const result = {}
+                data.forEach((task) => {
+                    const fromTime = (new Date(task['from_time'].slice(0, -1)))
+                    const toTime = new Date(task['to'].slice(0, -1))
+                    task['style'] = {
+                        top: `${fromTime.getMinutes() * 5 / 3}%`, // 100 / 60
+                        height: `${((toTime.getHours() * 60 + toTime.getMinutes()) - (fromTime.getHours() * 60 + fromTime.getMinutes())) * 5 / 3}%`
+                    }
+
+                    const locale = getLocale()
+                    if (datesAreEqual(fromTime, toTime)) {
+                        const options = { hour: 'numeric', minute: 'numeric', hour12: true }
+                        task['timeSpan'] = `${fromTime.toLocaleTimeString(locale, options)} - ${toTime.toLocaleTimeString(locale, options)}`
+                    } else {
+                        const options = { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }
+                        task['timeSpan'] = `${fromTime.toLocaleString(locale, options)} - ${toTime.toLocaleString(locale, options)}`
+                    }
+
+                    const dateKey = fromTime.toString().slice(0, 15)
+                    const timeKey = fromTime.getHours().toString()
+                    if (result[dateKey]) {
+                        if (result[dateKey][timeKey]) {
+                            result[dateKey][timeKey].push(task)
+                        } else {
+                            result[dateKey][timeKey] = [task]
+                        }
+                    } else {
+                        result[dateKey] = {}
+                        result[dateKey][timeKey] = [task]
+                    }
+                })
+                tasks.value = result
+                console.log('week tasks.value = ', tasks.value)
+            }
+        }).catch((err) => console.log('week tasks err = ', err))
+        .finally(() => isLoading.value = false)
+}
+
+
+const openNewTaskModal = (date, time) => {
+    console.log('date =', date, 'time =', time)
+    openModal.value = true
+}
+
+
 
 onBeforeMount(() => setInterval(() => {
     nowIndicatorTop.value = getNowIndicatorTop()
 }, 30000))
+
+onMounted(() => {
+    getTasks(),
+        watch(
+            () => props.day,
+            getTasks,
+        )
+})
 
 </script>

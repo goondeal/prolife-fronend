@@ -18,7 +18,7 @@ module.exports = {
         light: {
           bg: {
             primary: "#fff",
-            secondary: "#FAFAFA",
+            secondary: "#FBFBFA",
             highlight: "#EEE",
           },
           text: {

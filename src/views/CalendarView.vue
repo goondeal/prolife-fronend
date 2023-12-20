@@ -171,11 +171,9 @@ const getUserTasks = () => {
         .finally(() => isLoading.value = false)
 }
 
-// const getDateString = (date) => {
-//     return date.toString().slice(0, 15)
-// }
-
-onMounted(() => getUserTasks())
+onMounted(
+    () => getUserTasks(),
+    )
 // watch(
 //     viewMode,
 //     getUserTasks
