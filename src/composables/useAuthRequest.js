@@ -5,9 +5,9 @@ export default () => {
     const userStor = useUserStore()
     const sendAuthRequest = (request) => {
         const {config, ...requestOtherInfo} = request
-        console.log('request =', request)
-        console.log('config =', config)
-        console.log('requestOtherInfo =', requestOtherInfo)
+        // console.log('request =', request)
+        // console.log('config =', config)
+        // console.log('requestOtherInfo =', requestOtherInfo)
         const headers = {
             Authorization: `Token ${userStor.accessToken}`,
             ...(config?.headers || {})
