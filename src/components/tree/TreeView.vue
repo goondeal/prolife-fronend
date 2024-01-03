@@ -1,29 +1,7 @@
 <template>
     <div class="h-full">
         <div class="flex justify-start items-center bg-gray-50 p-2">
-            <div class="flex justify-start items-center">
-                <span class="me-2">Zoom:</span>
-                <button @click="zoomIn"
-                    class="w-8 h-8 p-1 me-1 border border-collapse rounded-sm text-light-text-primary hover:bg-gray-100">
-                    <PlusIcon></PlusIcon>
-                </button>
-                <button @click="zoomOut"
-                    class="w-8 h-8 p-1 border border-collapse rounded-sm text-light-text-primary hover:bg-gray-100">
-                    <MinusIcon></MinusIcon>
-                </button>
-                <button @click="restoreScale" class="ms-2 h-8 px-2 text-light-text-muted hover:bg-gray-100">Reset</button>
-            </div>
-            <div class="ms-4 flex justify-start items-center">
-                <button @click="linkStyle = LINK_STYLE_CURVE" :class="{ 'bg-gray-100': linkStyle === LINK_STYLE_CURVE }"
-                    class="w-8 h-8 p-1 me-1 border-0 rounded-sm text-light-text-primary hover:bg-gray-100">
-                    <ArrowUturnDownIcon></ArrowUturnDownIcon>
-                </button>
-                <button @click="linkStyle = LINK_STYLE_STRAIT" :class="{ 'bg-gray-100': linkStyle === LINK_STYLE_STRAIT }"
-                    class="w-8 h-8 p-1 border-0 rounded-sm text-light-text-primary hover:bg-gray-100">
-                    <ArrowDownIcon></ArrowDownIcon>
-                </button>
-            </div>
-            <div class="relative mx-4 flex-grow">
+            <div class="relative me-4 flex-grow flex justify-center items-center">
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -48,6 +26,39 @@
                     </svg>
                     <span class="sr-only">Loading...</span>
                 </div>
+            </div>
+            <div class="flex justify-start items-center">
+                <span class="me-2">Zoom:</span>
+                <button @click="zoomIn"
+                    class="me-1 border border-collapse rounded-sm text-light-text-primary hover:bg-gray-100">
+                    <PlusIcon class="w-6 h-6 p-1"></PlusIcon>
+                </button>
+                <button @click="zoomOut"
+                    class=" border border-collapse rounded-sm text-light-text-primary hover:bg-gray-100">
+                    <MinusIcon class="w-6 h-6 p-1"></MinusIcon>
+                </button>
+                <button @click="restoreScale" class="ms-2 h-8 px-2 text-light-text-muted hover:bg-gray-100">Reset</button>
+            </div>
+            <div class="flex justify-start items-center">
+                <button @click="collapseAll"
+                    class="me-1 border border-collapse rounded-sm text-light-text-primary hover:bg-gray-100">
+                    <ArrowsPointingInIcon class="w-6 h-6 p-1"></ArrowsPointingInIcon>
+                </button>
+                <button @click="expandAll"
+                    class=" border border-collapse rounded-sm text-light-text-primary hover:bg-gray-100">
+                    <ArrowsPointingOutIcon class="w-6 h-6 p-1"></ArrowsPointingOutIcon>
+                </button>
+                <button @click="restoreScale" class="ms-2 h-8 px-2 text-light-text-muted hover:bg-gray-100">Reset</button>
+            </div>
+            <div class="ms-4 flex justify-start items-center">
+                <button @click="linkStyle = LINK_STYLE_CURVE" :class="{ 'bg-gray-100': linkStyle === LINK_STYLE_CURVE }"
+                    class="w-8 h-8 p-1 me-1 border-0 rounded-sm text-light-text-primary hover:bg-gray-100">
+                    <ArrowUturnDownIcon></ArrowUturnDownIcon>
+                </button>
+                <button @click="linkStyle = LINK_STYLE_STRAIT" :class="{ 'bg-gray-100': linkStyle === LINK_STYLE_STRAIT }"
+                    class="w-8 h-8 p-1 border-0 rounded-sm text-light-text-primary hover:bg-gray-100">
+                    <ArrowDownIcon></ArrowDownIcon>
+                </button>
             </div>
         </div>
         <div class="tree-container" ref="treeContainer">
@@ -75,8 +86,11 @@
                                         </span>
                                     </div>
                                     <div class="group relative flex justify-start items-center me-1 text-light-text-muted">
-                                        <ScaleIcon class="w-4 h-4 inline-block"></ScaleIcon>
-                                        <span class="ms-[2px] text-light-text-secondary">{{ node.data.weight }}</span>
+                                        <!-- <ScaleIcon class="w-4 h-4 inline-block"></ScaleIcon> -->
+                                        <span>W</span>
+                                        <span class="ms-[2px] text-light-text-secondary">{{
+                                            Number.isInteger(node.data.weight)
+                                            ? node.data.weight : node.data.weight.toFixed(2) }}</span>
                                         <span
                                             class="group-hover:opacity-100 transition-opacity bg-gray-800 p-1 text-sm text-gray-100 rounded-sm absolute left-1/2 -translate-x-1/2 translate-y-full opacity-0 m-4 mx-auto">
                                             weight
@@ -106,12 +120,10 @@
                                     <EllipsisVerticalIcon></EllipsisVerticalIcon>
                                 </button>
                                 <NodeOptionsMenu class="z-10" :index="index" :node="node" v-if="selectedNodeIndex === index"
-                                    @show-new-task-modal="showNewTaskModal = true" 
-                                    @duplicate-once="duplicateOnce(index)"
-                                    @duplicate-n-times="showNTasksModal = true" 
-                                    @edit-task="editTask(index)"
+                                    @show-new-task-modal="showNewTaskModal = true" @duplicate-once="duplicateOnce(index)"
+                                    @duplicate-n-times="showNTasksModal = true" @edit-task="showEditTaskModal = true"
                                     @export-task-to-calendar="exportTaskToCalendar(index)"
-                                    @export-task-to-inbox="exportTaskToInbox(index)" 
+                                    @export-task-to-inbox="exportTaskToInbox(index)"
                                     @delete-task="showConfirmDeleteTaskDialog = true"
                                     @delete-subtasks="showConfirmDeleteTaskSubtasksDialog = true">
                                 </NodeOptionsMenu>
@@ -123,7 +135,12 @@
         </div>
         <Teleport to="body">
             <ModalWrapper v-if="showNewTaskModal" @closeModal="showNewTaskModal = false">
-                <NewTaskForm @submit="addSubtaskOffline"></NewTaskForm>
+                <CreateEditTaskForm @submit="addSubtaskOffline"></CreateEditTaskForm>
+            </ModalWrapper>
+        </Teleport>
+        <Teleport to="body">
+            <ModalWrapper v-if="showEditTaskModal" @closeModal="showEditTaskModal = false">
+                <CreateEditTaskForm @submit="editTask" :task="getSelectedTaskData()"></CreateEditTaskForm>
             </ModalWrapper>
         </Teleport>
         <Teleport to="body">
@@ -139,7 +156,8 @@
             </ModalWrapper>
         </Teleport>
         <Teleport to="body">
-            <ModalWrapper v-if="showConfirmDeleteTaskSubtasksDialog" @closeModal="showConfirmDeleteTaskSubtasksDialog = false">
+            <ModalWrapper v-if="showConfirmDeleteTaskSubtasksDialog"
+                @closeModal="showConfirmDeleteTaskSubtasksDialog = false">
                 <ConfirmDeletionDialog @delete="deleteSelectedTaskSubtasks">
                     <template v-slot:message>Are you sure to delete all the subtasks of this task ?</template>
                 </ConfirmDeletionDialog>
@@ -152,16 +170,16 @@
 <script setup>
 import { computed, defineProps, ref, watch, onMounted, onBeforeUnmount, inject } from 'vue'
 import * as d3 from "d3"
-import { ArrowDownIcon, ArrowUturnDownIcon, PlusIcon, MinusIcon, EllipsisVerticalIcon, ArrowUpRightIcon, ScaleIcon, CircleStackIcon, LockClosedIcon, LockOpenIcon } from '@heroicons/vue/24/outline'
+import { ArrowDownIcon, ArrowUturnDownIcon, PlusIcon, MinusIcon, EllipsisVerticalIcon, ArrowUpRightIcon, CircleStackIcon, LockClosedIcon, LockOpenIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/vue/24/outline'
 import NodeOptionsMenu from './NodeOptionsMenu.vue'
 import ModalWrapper from '../modals/ModalWrapper.vue'
-import NewTaskForm from '../modals/forms/NewTaskForm.vue'
+import CreateEditTaskForm from '../modals/forms/CreateEditTaskForm.vue'
 import NTasksForm from '../modals/forms/NTasksForm.vue'
 import ConfirmDeletionDialog from '../modals/dialog/ConfirmDeletionDialog.vue'
-import useUID from '../../composables/useUID.js'
+// import { useUIDStore } from '../../stores/counter'
 
 
-const { getUID } = useUID()
+// const { getUID } = useUIDStore()
 
 const props = defineProps({
     data: Object
@@ -230,7 +248,9 @@ const searchLoading = ref(false)
 
 // Methods
 const deepCopy = (node) => {
-    let obj = { _key: getUID() };
+    let obj = {
+        // _key: getUID()
+    };
     for (var key in node) {
         if (node[key] === null) {
             obj[key] = null;
@@ -280,7 +300,7 @@ const getInitialTransformStyle = computed(() => {
 
 const buildTree = () => {
     const treeBuilder = d3.tree().nodeSize([NODE_WIDTH, LEVEL_HEIGHT]);
-    const tree = treeBuilder(d3.hierarchy(dataset.value, (d) => d['tasks']));
+    const tree = treeBuilder(d3.hierarchy(dataset.value, (d) => d._collapsed ? [] : d['tasks']));
     return [tree.descendants(), tree.links()];
 }
 
@@ -360,6 +380,7 @@ const updateDataList = () => {
     nodeDataList.value = nodes;
     console.log('nodeDataList =', nodeDataList.value)
 }
+
 const draw = () => {
     updateDataList();
     const identifier = dataset.value["identifier"];
@@ -522,12 +543,34 @@ const zoomOut = () => {
     setScale(targetScale);
 }
 
+const expandAll = () => {
+    nodeDataList.value.forEach((node) => node.data._collapsed = false)
+    draw()
+}
+const collapseAll = () => {
+    nodeDataList.value.forEach((node) => node.data._collapsed = true)
+    draw()
+}
+
 const restoreScale = () => setScale(1);
 
 
 // Dropdown Menu
 const selectedNodeIndex = ref()
 const lastSelectedNodeIndex = ref()
+const getSelectedTaskData = () => {
+    const selectedNode = nodeDataList.value[lastSelectedNodeIndex.value].data
+    const res = {}
+    for (const key in selectedNode) {
+        if (!key.startsWith('_') && key !== 'tasks') {
+            let type = key === 'description' ? 'textarea' : 'text'
+            if (typeof selectedNode[key] === 'boolean') { type = 'checkbox' }
+            if (typeof selectedNode[key] === 'number') { type = 'number' }
+            res[key] = { value: selectedNode[key], type: type }
+        }
+    }
+    return res
+}
 watch(selectedNodeIndex, (value) => {
     if (value !== -1) {
         lastSelectedNodeIndex.value = value
@@ -548,11 +591,13 @@ watch(linkStyle, (value, oldValue) => {
 
 
 const showNewTaskModal = ref(false)
+const showEditTaskModal = ref(false)
 const showNTasksModal = ref(false)
 const showConfirmDeleteTaskDialog = ref(false)
 const showConfirmDeleteTaskSubtasksDialog = ref(false)
 
 const addSubtaskToTask = inject('addSubtaskToTask')
+const editTaskData = inject('editTaskData')
 const addSubtaskOffline = (task) => {
     // console.log('selectedNodeIndex.value =', lastSelectedNodeIndex.value)
     // console.log('nodeDataList =', nodeDataList.value)
@@ -565,11 +610,11 @@ const addSubtaskOffline = (task) => {
     showNewTaskModal.value = false
 }
 
-
-
-// const addSubtask = (index) => {
-//     console.log('add subtask to task: ', index)
-// }
+const editTask = (taskData) => {
+    const id = nodeDataList.value[lastSelectedNodeIndex.value].data.__id
+    editTaskData(taskData, id)
+    showEditTaskModal.value = false
+}
 
 const duplicateTask = inject('duplicateTask')
 const duplicateOnce = (index) => {
@@ -582,9 +627,6 @@ const duplicateNTimes = (n) => {
     const task = nodeDataList.value[lastSelectedNodeIndex.value].data
     duplicateTask(task, n)
     showNTasksModal.value = false
-}
-const editTask = (index) => {
-    console.log('editTask ', index)
 }
 const exportTaskToCalendar = (index) => {
     console.log('duplicateNTimes ', index)
@@ -607,7 +649,6 @@ const deleteSelectedTaskSubtasks = () => {
     showConfirmDeleteTaskSubtasksDialog.value = false
 }
 
-
 // lifecycle hooks
 onMounted(() => {
     init()
@@ -621,16 +662,17 @@ onBeforeUnmount(() => {
 
 const onClickNode = (index) => {
     const curNode = nodeDataList.value[index];
+    curNode.data._collapsed = !curNode.data._collapsed
     // console.log(curNode.data)
-    if (curNode.data.tasks) {
-        curNode.data._tasks = curNode.data.tasks;
-        curNode.data.tasks = null;
-        curNode.data._collapsed = true;
-    } else {
-        curNode.data.tasks = curNode.data._tasks;
-        curNode.data._tasks = null;
-        curNode.data._collapsed = false;
-    }
+    // if (curNode.data.tasks) {
+    //     curNode.data._tasks = curNode.data.tasks;
+    //     curNode.data.tasks = null;
+    //     curNode.data._collapsed = true;
+    // } else {
+    //     curNode.data.tasks = curNode.data._tasks;
+    //     curNode.data._tasks = null;
+    //     curNode.data._collapsed = false;
+    // }
     draw();
     // nodeDataList.value = this.treeChartCore.getNodeDataList();
 }

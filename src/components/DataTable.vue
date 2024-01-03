@@ -56,7 +56,7 @@
 
         <Teleport to="#app">
             <ModalWrapper v-if="openNewTaskModal" @closeModal="openNewTaskModal = false">
-                <NewTaskForm></NewTaskForm>
+                <CreateEditTaskForm></CreateEditTaskForm>
             </ModalWrapper>
         </Teleport>
 
@@ -95,7 +95,7 @@ import { computed, ref, watch } from 'vue'
 // import { EllipsisVerticalIcon } from '@heroicons/vue/24/outline'
 import ModalWrapper from './modals/ModalWrapper.vue'
 import ExportTaskForm from './modals/forms/ExportTaskForm.vue'
-import NewTaskForm from './modals/forms/NewTaskForm.vue'
+import CreateEditTaskForm from './modals/forms/CreateEditTaskForm.vue'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 
 
@@ -187,7 +187,7 @@ const showNewTaskModal = () => {
 
 watch(
     tasks,
-    (newValue, oldValue) => {
+    (newValue) => {
         console.log('tasks changed!')
         for (const i in newValue) {
             const task = newValue[i]
@@ -202,7 +202,7 @@ watch(
 )
 watch(
     selectAll,
-    (newValue, oldValue) => {
+    (newValue) => {
         for (const task of tasks.value) {
             task['__selected'] = newValue
         }

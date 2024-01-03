@@ -12,7 +12,19 @@
         <div class="my-4 w-full bg-gray-200 text-center">
             Or
         </div> -->
-        <h2 class="mb-4 text-4xl font-medium text-gray-900 dark:text-white">{{ newProject.name }}</h2>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="mb-4 text-4xl font-medium text-gray-900 dark:text-white">{{ newProject.name }}</h2>
+            <div class="flex justify-start items-center">
+                <button @click="cancelProject"
+                    class="me-2 px-4 py-2 text-light-text-muted  hover:bg-light-bg-highlight rounded-md">cancel</button>
+                <button @click="saveProject" class="flex items-center px-4 py-2 text-white font-medium bg-blue-600 rounded-md" :disabled="isLoading">
+                    <span v-if="isLoading">
+                        <TheSpinner class="w-3 h-3 text-white"></TheSpinner>
+                    </span>
+                    {{isLoading ? 'Saving ...' : 'Save project'}}
+                </button>
+            </div>
+        </div>
         <div class="flex flex-col flex-grow">
             <!-- <div class="inline-flex rounded-md shadow-sm my-2">
                 <button @click="view = 'editor'"
@@ -53,6 +65,7 @@
                 </div>
             </div> -->
             <TreeView class="flex-grow" :data="newProject"></TreeView>
+            <Toast></Toast>
         </div>
     </div>
 </template>
@@ -60,24 +73,93 @@
 
 <script setup>
 import { ref, provide, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router';
+import useAuthRequest from '../composables/useAuthRequest'
+import { useUIDStore } from '../stores/counter'
 // import JsonEditorVue from 'json-editor-vue'
 // import useUID from '../composables/useUID'
 import TreeView from '../components/tree/TreeView.vue'
-import { useUIDStore } from '../stores/counter'
+import TheSpinner from '../components/TheSpinner.vue'
+// import OrganizationChart from 'primevue/organizationchart';
+import Toast from 'primevue/toast';
+import { useToast } from 'primevue/usetoast';
 
+
+const toast = useToast()
+// const show = () => {
+//     toast.add({ severity: 'info', summary: 'Info', detail: 'Message Content', life: 3000 });
+// };
 // const { getUID } = useUID()
-const {getUID} = useUIDStore()
+const { getUID } = useUIDStore()
+const route = useRoute()
+const router = useRouter()
+const { sendAuthRequest } = useAuthRequest()
+
+
+const cancelProject = () => {
+    router.push({
+        name: 'category-detail',
+        params: { id: route.params.id }
+    })
+}
+
+const copyprojectWithoutIgnoredProps = (node) => {
+    let obj = {};
+    for (var key in node) {
+        if (!key.startsWith('_')) {
+            if (node[key] === null) {
+                obj[key] = null;
+            } else if (Array.isArray(node[key])) {
+                obj[key] = node[key].map((x) => copyTaskWithDifferentID(x));
+            } else if (typeof node[key] === "object") {
+                obj[key] = copyTaskWithDifferentID(node[key]);
+            } else {
+                obj[key] = node[key];
+            }
+        }
+    }
+    return obj;
+}
+const saveProject = () => {
+    isLoading.value = true
+    const data = copyprojectWithoutIgnoredProps(newProject.value)
+    console.log('project =', data)
+    sendAuthRequest({
+        url: `/categories/${route.params.id}/projects/`,
+        method: 'post',
+        data: data,
+        config: {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+    }).then((response) => {
+            console.log('project uploading response = ', response)
+            if (response.status === 201) {
+                router.push({ name: 'project-detail', params: {id: route.params.id, projectID: response.data.id} })
+            }
+        })
+        .catch((err) => {
+            console.log('project uploading error =', err)
+            toast.add({ severity: 'error', summary: err.response.status, detail: err.response.statusText, life: 3000 })
+        })
+        .finally(() => isLoading.value = false)
+}
+
+
 
 // project tree
 const newProject = ref({
     __id: getUID(),
     name: 'Untitled',
+    tags: [],
     description: '',
     auto_weight: true,
     weight: 100,
     progress: 0,
     points: 1
 })
+const isLoading = ref(false)
 
 const getTreeMap = (task, globalMap, parentMapList, index) => {
     globalMap[task.__id.toString()] = parentMapList ? [...parentMapList, index] : []
@@ -113,11 +195,13 @@ const findTaskInTree = (id, task) => {
     //     }
     // }
     const taskMap = projectTreeMap.value[id.toString()]
+    console.log('taskMap =', taskMap)
     if (taskMap !== undefined) {
         let t = task
         for (const index of taskMap) {
             t = t.tasks[index]
         }
+        console.log('t =', t)
         return t
     }
 }
@@ -142,17 +226,57 @@ const findTaskParentInTree = (taskID) => {
     }
 }
 
+const updateSubtasksWeights = (tasks) => {
+    if (tasks) {
+        const len = tasks.length
+        const solidTasks = tasks.filter((t) => t.auto_weight === false)
+        const solidWeights = solidTasks.reduce((total, t) => total + (t.weight || 0), 0)
+        console.log('st=', solidTasks, 'sw =', solidWeights)
+        if (solidWeights > 100) {
+            console.log('weight error, sum =', solidWeights)
+        } else {
+            tasks.forEach((t) => {
+                if (t.auto_weight) {
+                    t.weight = (100 - solidWeights) / (len - solidTasks.length)
+                }
+            })
+        }
+    }
+}
 
 const addSubtaskToTask = (task, parentID) => {
-    console.log('parentID =', parentID)
+    // console.log('parentID =', parentID)
+    console.log('new task =', task)
     const parent = findTaskInTree(parentID, newProject.value)
-    console.log('parent =', parent)
+    // console.log('parent =', parent)
     if (parent) {
         task.__id = getUID()
-        parent.tasks = [...(parent.tasks || []), task]
-        // newProject.value = {...newProject.value}
+        let tasks = [...(parent.tasks || []), task]
+        updateSubtasksWeights(tasks)
+        parent.tasks = tasks
     }
-    console.log('newProject =', newProject.value)
+    // console.log('newProject =', newProject.value)
+}
+
+const editTaskData = (data, id) => {
+    const task = findTaskInTree(id, newProject.value)
+    const weightChanged = data['auto_weight'] !== task['auto_weight'] || data['weight'] !== task['weight']
+    const keys = new Set(Object.keys(data))
+    for (const key in data) {
+        task[key] = data[key]
+    }
+    // delete removed attributes
+    for (const key in task) {
+        if (!key.startsWith('_') && !keys.has(key)) {
+            delete task[key]
+        }
+    }
+    if (weightChanged) {
+        const parent = findTaskParentInTree(task.__id)
+        if (parent) {
+            updateSubtasksWeights(parent.tasks || [])
+        }
+    }
 }
 
 const copyTaskWithDifferentID = (node) => {
@@ -178,12 +302,12 @@ const duplicateTask = (task, n) => {
     if (taskParent) {
         const tasks = Array.from(Array(n).keys()).map((key) => {
             const t = copyTaskWithDifferentID(task)
-            t.name = `${t.name}-${key+1}`
+            t.name = `${t.name} (${key + 1})`
             return t
         })
-        console.log('parent tasks length =', taskParent.tasks.length)
-        taskParent.tasks = [...(taskParent.tasks || []), ...tasks]
-        console.log('parent tasks length =', taskParent.tasks.length)
+        const taskIndex = taskParent.tasks.findIndex((t) => t.__id === task.__id)
+        taskParent.tasks.splice(taskIndex + 1, 0, ...tasks)
+        updateSubtasksWeights(taskParent.tasks)
     }
 }
 const deleteTask = (id) => {
@@ -193,7 +317,9 @@ const deleteTask = (id) => {
     if (parent) {
         if (parent.tasks) {
             console.log('parent tasks length =', parent.tasks.length)
-            parent.tasks = parent.tasks.filter((t) => t.__id !== id)
+            const tasks = parent.tasks.filter((t) => t.__id !== id)
+            updateSubtasksWeights(tasks)
+            parent.tasks = tasks
             console.log('parent tasks length =', parent.tasks.length)
         }
     }
@@ -208,6 +334,7 @@ const deleteTaskSubtasks = (id) => {
 
 provide('addSubtaskToTask', addSubtaskToTask)
 provide('duplicateTask', duplicateTask)
+provide('editTaskData', editTaskData)
 provide('deleteTask', deleteTask)
 provide('deleteTaskSubtasks', deleteTaskSubtasks)
 
